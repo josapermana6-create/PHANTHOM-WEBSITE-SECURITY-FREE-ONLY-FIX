@@ -1,0 +1,200 @@
+# Phantom WAF Configuration
+
+# Global Settings
+global:
+  enabled: true
+  mode: "block"  # Options: monitor, block, challenge
+  log_level: "INFO"
+  
+# Security Modules - Enable/Disable
+modules:
+  sql_injection: true
+  xss_protection: true
+  command_injection: true
+  path_traversal: true
+  csrf_protection: true
+  xxe_protection: true
+  ssrf_protection: true
+  rate_limiting: true
+  bot_detection: true
+  ml_anomaly: true
+  geo_blocking: false
+  ip_reputation: true
+  virtual_patching: true
+
+# SQL Injection Detection
+sql_injection:
+  sensitivity: "medium"  # low, medium, high
+  block_score_threshold: 7
+  patterns:
+    - "(?i)(union.*select)"
+    - "(?i)(select.*from)"
+    - "(?i)(insert.*into)"
+    - "(?i)(delete.*from)"
+    - "(?i)(drop.*table)"
+    - "(?i)(or.*1=1)"
+    - "(?i)(and.*1=1)"
+    - "(?i)(exec(ute)?\\s+(sp_)?)"
+    - "(?i)(xp_cmdshell)"
+
+# XSS Protection
+xss_protection:
+  sensitivity: "medium"
+  block_score_threshold: 7
+  patterns:
+    - "(?i)(<script[^>]*>.*?</script>)"
+    - "(?i)(javascript:)"
+    - "(?i)(on\\w+\\s*=)"
+    - "(?i)(<iframe)"
+    - "(?i)(eval\\()"
+    - "(?i)(expression\\()"
+    - "(?i)($.cookie)"
+    - "(?i)(document\\.cookie)"
+
+# Command Injection
+command_injection:
+  sensitivity: "high"
+  block_score_threshold: 8
+  dangerous_commands:
+    - "bash"
+    - "sh"
+    - "cmd"
+    - "powershell"
+    - "eval"
+    - "exec"
+    - "system"
+
+# Path Traversal
+path_traversal:
+  sensitivity: "high"
+  block_score_threshold: 8
+  max_traversal_depth: 3
+
+# CSRF Protection
+csrf_protection:
+  token_name: "X-CSRF-Token"
+  token_length: 32
+  check_referer: true
+  check_origin: true
+  safe_methods: ["GET", "HEAD", "OPTIONS"]
+
+# Rate Limiting
+rate_limiting:
+  enabled: true
+  algorithm: "sliding_window"  # token_bucket, sliding_window
+  global:
+    requests: 1000
+    window: 60  # seconds
+  per_ip:
+    requests: 100
+    window: 60
+  per_route:
+    "/api/login":
+      requests: 5
+      window: 300
+    "/api/register":
+      requests: 3
+      window: 600
+
+# Bot Detection
+bot_detection:
+  enabled: true
+  challenge_suspicious: true
+  block_malicious: true
+  known_good_bots:
+    - "Googlebot"
+    - "Bingbot"
+    - "Slackbot"
+  patterns:
+    suspicious:
+      - "curl"
+      - "wget"
+      - "python-requests"
+      - "scrapy"
+    malicious:
+      - "sqlmap"
+      - "nikto"
+      - "nmap"
+      - "masscan"
+
+# ML Anomaly Detection
+ml_anomaly:
+  enabled: true
+  model: "isolation_forest"
+  contamination: 0.1
+  training_samples: 1000
+  retrain_interval: 3600  # seconds
+  features:
+    - "request_length"
+    - "header_count"
+    - "param_count"
+    - "entropy"
+    - "special_char_ratio"
+
+# Geographic Blocking
+geo_blocking:
+  enabled: false
+  mode: "blacklist"  # whitelist, blacklist
+  blacklist_countries: []
+  whitelist_countries: []
+  block_vpn: true
+  block_tor: true
+  maxmind_db_path: "data/GeoLite2-Country.mmdb"
+
+# IP Reputation
+ip_reputation:
+  enabled: true
+  whitelist:
+    - "127.0.0.1"
+    - "::1"
+  blacklist: []
+  auto_blacklist:
+    enabled: true
+    threshold: 10  # violations before auto-block
+    duration: 3600  # seconds
+  threat_feeds:
+    - "https://rules.emergingthreats.net/blockrules/compromised-ips.txt"
+
+# Virtual Patching
+virtual_patching:
+  enabled: true
+  rules: []
+
+# Logging
+logging:
+  enabled: true
+  format: "json"
+  destination: "file"  # file, syslog, elasticsearch
+  file_path: "logs/phantom_waf.log"
+  max_size: 104857600  # 100MB
+  backup_count: 5
+  log_attacks: true
+  log_blocked: true
+  log_allowed: false
+
+# Monitoring
+monitoring:
+  enabled: true
+  metrics_port: 9090
+  prometheus_enabled: true
+  dashboard_enabled: true
+  dashboard_port: 8080
+  alerts:
+    email:
+      enabled: false
+      smtp_server: ""
+      from_address: ""
+      to_addresses: []
+    webhook:
+      enabled: false
+      url: ""
+
+# Performance
+performance:
+  max_request_size: 10485760  # 10MB
+  max_header_size: 8192
+  timeout: 30
+  cache_enabled: true
+  cache_ttl: 300
+  async_processing: true
+  worker_threads: 4
