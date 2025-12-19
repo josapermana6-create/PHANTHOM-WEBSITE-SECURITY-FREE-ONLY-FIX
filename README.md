@@ -2,6 +2,8 @@
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX?style=social)](https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX/pulls)
 
 **Phantom WAF** is a state-of-the-art Web Application Firewall (WAF) built in Python that rivals or exceeds commercial solutions like Cloudflare, AWS WAF, and ModSecurity. It provides comprehensive protection against OWASP Top 10 vulnerabilities and advanced threats.
 
@@ -34,8 +36,8 @@
 
 ### 1. Clone the Repository
 ```bash
-git https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX.git
-cd phantom-waf
+git clone https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX.git
+cd PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX
 ```
 
 ### 2. Install Dependencies
