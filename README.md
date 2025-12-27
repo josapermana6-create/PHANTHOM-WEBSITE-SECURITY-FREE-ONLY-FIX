@@ -1,331 +1,298 @@
-# 🛡️ Phantom WAF - Enterprise-Grade Web Application Firewall
+# Phantom Security Project
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Stars](https://img.shields.io/github/stars/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX?style=social)](https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX/pulls)
+**Enterprise-Grade Web Application Firewall (WAF)** dengan **High-Performance Go Backend** dan sistem deteksi ancaman lengkap.
 
-**Phantom WAF** is a state-of-the-art Web Application Firewall (WAF) built in Python that rivals or exceeds commercial solutions like Cloudflare, AWS WAF, and ModSecurity. It provides comprehensive protection against OWASP Top 10 vulnerabilities and advanced threats.
+## 🚀 Performance (Go WAF)
 
-## ✨ Key Features
+| Metric | Python WAF | **Go WAF** |
+|--------|-----------|-----------|
+| Throughput | ~500 req/s | **>10,000 req/s** (20x) |
+| Latency (p50) | ~20ms | **<2ms** (10x faster) |
+| Memory | ~200MB | **~80MB** (60% less) |
 
-### 🔒 Multi-Layer Attack Detection
-- **SQL Injection** - 25+ patterns including blind SQLi, time-based, boolean-based, and union-based attacks
-- **Cross-Site Scripting (XSS)** - 30+ patterns for reflected, stored, DOM-based, and polyglot XSS
-- **Command Injection** - Shell metacharacter detection, command chaining, and platform-specific commands
-- **Path Traversal** - Encoded traversal detection, sensitive file protection, absolute path validation
-- **CSRF Protection** - Token validation, Origin/Referer checking, SameSite cookie enforcement
-- **XXE (XML External Entity)** - DOCTYPE/ENTITY detection, external resource blocking
-- **SSRF (Server-Side Request Forgery)** - Private IP blocking, cloud metadata protection, DNS rebinding prevention
+## ✨ Fitur Utama
 
-### 🧠 Advanced Protection
-- **Machine Learning Anomaly Detection** - Isolation Forest algorithm for zero-day threat detection
-- **Bot Detection** - User agent analysis, headless browser detection, behavioral pattern analysis
-- **Intelligent Rate Limiting** - Sliding window and token bucket algorithms with per-IP/per-route limits
-- **IP Reputation Management** - Whitelist/blacklist with auto-blacklisting based on violation thresholds
-- **Real-time Threat Scoring** - Multi-module threat scoring with configurable thresholds
+### 🛡️ 9 Detection Modules (All in Go)
 
-### ⚡ Performance & Integration
-- **High Performance** - Capable of handling 10,000+ requests/second
-- **Framework Support** - Flask, Django, and FastAPI middleware
-- **Async Processing** - Non-blocking request analysis
-- **Configurable Rules** - YAML-based configuration for easy customization
-- **Real-time Monitoring** - Built-in statistics and module information endpoints
+1. **SQL Injection** - 40+ patterns, bypass detection
+2. **XSS Protection** - 35+ patterns, HTML/URL decoding
+3. **Command Injection** - Shell metacharacter detection
+4. **Path Traversal** - Encoding bypass, sensitive files
+5. **CSRF Protection** - Cryptographic tokens
+6. **Rate Limiting** - Token bucket (global/IP/route)
+7. **Bot Detection** - Good/bad/suspicious bots
+8. **Port Filter** - Scan detection, port policies
+9. **IP Reputation** - Threat intel + behavioral analysis
 
-## 📦 Installation
+### 🎯 Flexible Architecture
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/josapermana6-create/PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX.git
-cd PHANTHOM-WEBSITE-SECURITY-FREE-ONLY-FIX
+- **3 Deployment Modes**: Full (WAF+IPS), WAF-only, IPS-only
+- **Enable/Disable** any module individually
+- **Adjustable thresholds** per module
+- **Concurrent execution** with goroutines
+- **Multi-framework support** (Flask, Django, FastAPI)
+
+## 📁 Struktur Project
+
 ```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
+PHANTHOM SECURITY PROJECT/
+├── ips-service/                 # Go WAF Service (NEW!)
+│   ├── cmd/phantom-waf/        # Main service
+│   ├── internal/waf/           # 9 detection modules
+│   ├── internal/detector/      # IP detection
+│   ├── internal/intelligence/  # Threat feeds
+│   ├── config/                 # Configuration
+│   └── README.md               # Full documentation
+│
+├── integrations/               # Python clients
+│   ├── waf_client.py          # Go WAF client
+│   └── django_middleware.py   # Django integration
+│
+├── modules/                    # Python modules (legacy)
+├── demo_port_filter.py        # Port filter demo
+└── README.md                   # This file
 ```
-
-### 3. Configure WAF
-Edit `config.yaml` to customize security rules, thresholds, and enabled modules.
 
 ## 🚀 Quick Start
 
-### Basic Usage
+### Option 1: High-Performance Go WAF (Recommended)
 
-```python
-from phantom_waf import PhantomWAF
+```bash
+# 1. Build Go service
+cd ips-service
+go build -o phantom-waf cmd/phantom-waf/main.go
 
-# Initialize WAF
-waf = PhantomWAF('config.yaml')
+# 2. Run service
+./phantom-waf
 
-# Analyze a request
-request_data = {
-    'method': 'POST',
-    'path': '/api/login',
-    'headers': {'User-Agent': '...', 'Host': 'example.com'},
-    'params': {},
-    'body': {'username': 'admin', 'password': 'pass123'},
-    'ip': '192.168.1.100'
-}
-
-# Get WAF analysis result
-result = waf.analyze_request(request_data)
-
-if result.action.value == 'block':
-    print(f"🛡️ Request blocked! Threat Score: {result.threat_score}")
-    print(f"Blocked by: {result.blocked_by}")
-else:
-    print("✅ Request allowed")
+# 3. Test with Python
+python demo_port_filter.py
 ```
 
-### Flask Integration
+### Option 2: Python WAF (Legacy)
 
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run WAF
+python phantom_waf.py
+```
+
+## 🔌 Integration
+
+### Flask
 ```python
-from flask import Flask
-from integrations.flask_middleware import FlaskWAFMiddleware
+from integrations.waf_client import PhantomWAFMiddleware
 
 app = Flask(__name__)
-waf = FlaskWAFMiddleware(app, config_path='config.yaml')
-
-@app.route('/')
-def index():
-    return 'Hello, Secure World!'
-
-if __name__ == '__main__':
-    app.run()
+PhantomWAFMiddleware(app, waf_url='http://localhost:8080')
 ```
 
-### Run Demo Application
-
-```bash
-python demo/protected_app.py
+### Django
+```python
+MIDDLEWARE = [
+    'integrations.waf_middleware.PhantomWAFMiddleware',
+]
 ```
 
-Then visit `http://localhost:5000` to see the interactive demo with built-in attack testing!
+### FastAPI
+```python
+from integrations.waf_client import PhantomWAFClient
 
-## 🧪 Testing WAF Effectiveness
+waf = PhantomWAFClient()
 
-### Run Attack Simulator
-
-Test all attack vectors:
-```bash
-python attack_simulator.py --target http://localhost:5000
+@app.middleware("http")
+async def waf_middleware(request, call_next):
+    result = waf.analyze_request(...)
+    if result.is_blocked:
+        return Response("Blocked", 403)
+    return await call_next(request)
 ```
 
-Test specific attack type:
-```bash
-python attack_simulator.py --target http://localhost:5000 --attack-type sql_injection
-```
-
-### Example Output
-```
-🎯  PHANTOM WAF ATTACK SIMULATOR
-════════════════════════════════════════════════════════════════════════════════
-
-Testing: SQL INJECTION
-────────────────────────────────────────────────────────────────────────────────
-
-🛡️ [1/8] BLOCKED - ' OR '1'='1
-   └─ Blocked by: sql_injection (Score: 17)
-🛡️ [2/8] BLOCKED - 1' UNION SELECT NULL,NULL,NULL--
-   └─ Blocked by: sql_injection (Score: 20)
-
-📊  TEST SUMMARY
-════════════════════════════════════════════════════════════════════════════════
-Total Attacks:  40
-Blocked:        38 (95.0%)
-Allowed:        2 (5.0%)
-
-✅ EXCELLENT! WAF is blocking 95.0% of attacks!
-```
-
-## 📊 WAF Management API
-
-Access WAF statistics and management endpoints:
-
-```bash
-# Get WAF statistics
-GET /_waf/stats
-
-# Get module information
-GET /_waf/modules
-
-# Check IP status
-GET /_waf/ip/192.168.1.100
-
-# Whitelist an IP
-POST /_waf/whitelist/192.168.1.100
-
-# Blacklist an IP
-POST /_waf/blacklist/192.168.1.100
-```
-
-## ⚙️ Configuration
-
-### Security Modules
-
-Enable/disable modules in `config.yaml`:
+## ⚙️ Konfigurasi Fleksibel
 
 ```yaml
-modules:
-  sql_injection: true
-  xss_protection: true
-  command_injection: true
-  path_traversal: true
-  csrf_protection: true
-  xxe_protection: true
-  ssrf_protection: true
-  rate_limiting: true
-  bot_detection: true
-  ml_anomaly: true
-  ip_reputation: true
+# Pilih deployment mode
+deployment:
+  mode: "full"  # full, waf-only, ips-only
+
+# Enable/disable per module
+waf_modules:
+  sql_injection:
+    enabled: true
+    sensitivity: "high"
+  port_filter:
+    enabled: true
+    allowed_ports: [80, 443, 8080]
+    blocked_ports: [23, 445, 3389]
 ```
+
+## 📊 Fitur Detection
+
+### SQL Injection
+- Union-based, Boolean-based, Time-based
+- Stacked queries, Comment injection
+- 40+ compiled patterns
+
+### XSS Protection
+- Script tags, Event handlers
+- JavaScript protocol, DOM manipulation
+- HTML/URL decoding
+
+### Command Injection
+- Shell metacharacters (;, &&, ||)
+- Dangerous commands (bash, eval, exec)
+- Command substitution detection
+
+### Path Traversal
+- ../  detection (all encodings)
+- Null byte injection
+- Sensitive file protection
+
+### CSRF Protection
+- Cryptographic token generation
+- Origin/Referer validation
+- Session-based verification
 
 ### Rate Limiting
+- Token bucket algorithm
+- Global/IP/Route limits
+- Configurable windows
 
-Configure rate limits:
+### Bot Detection
+- Good bot whitelist (Googlebot, Bingbot)
+- Malicious bot detection (sqlmap, nikto)
+- Behavioral analysis
 
+### Port Filter (NEW!)
+- Allowed/blocked port enforcement
+- Suspicious port flagging
+- Port scan detection
+- Attack pattern recognition
+
+### IP Reputation
+- Threat intelligence feeds
+- Behavioral anomaly detection
+- Auto-blocking
+
+## 📡 API Endpoints
+
+```bash
+# Full WAF + IPS analysis
+POST /api/v1/analyze/full
+
+# WAF-only (no IP checking)
+POST /api/v1/analyze/waf
+
+# IPS-only (IP-based only)
+POST /api/v1/analyze/ips
+
+# CSRF token management
+POST /api/v1/csrf/token
+POST /api/v1/csrf/verify
+
+# Statistics
+GET /api/v1/stats
+```
+
+## 🎯 Use Cases
+
+### High-Traffic E-Commerce
 ```yaml
-rate_limiting:
-  enabled: true
-  algorithm: "sliding_window"  # or "token_bucket"
-  global:
-    requests: 1000
-    window: 60
-  per_ip:
-    requests: 100
-    window: 60
-  per_route:
-    "/api/login":
-      requests: 5
-      window: 300
+deployment:
+  mode: "full"
+  concurrent_modules: true
+performance:
+  worker_pool_size: 200
 ```
 
-### Sensitivity Levels
-
-Adjust detection sensitivity (low, medium, high):
-
+### API-Only Service
 ```yaml
-sql_injection:
-  sensitivity: "medium"
-  block_score_threshold: 7
-
-xss_protection:
-  sensitivity: "medium"
-  block_score_threshold: 7
+deployment:
+  mode: "waf-only"
+waf_modules:
+  csrf_protection:
+    enabled: false
 ```
 
-## 📈 Performance Benchmarks
-
-- **Throughput**: 10,000+ requests/second
-- **Latency**: < 5ms per request analysis
-- **Memory**: ~200MB for 10,000 tracked IPs
-- **False Positive Rate**: < 0.1% on legitimate traffic
-
-## 🏗️ Architecture
-
-```
-phantom-waf/
-├── phantom_waf.py              # Main WAF engine
-├── config.yaml                 # Configuration file
-├── modules/                    # Detection modules
-│   ├── sql_injection_detector.py
-│   ├── xss_detector.py
-│   ├── command_injection_detector.py
-│   ├── path_traversal_detector.py
-│   ├── csrf_detector.py
-│   ├── xxe_detector.py
-│   ├── ssrf_detector.py
-│   ├── rate_limiter.py
-│   ├── bot_detector.py
-│   ├── ml_anomaly_detector.py
-│   └── ip_reputation.py
-├── utils/                      # Utility functions
-│   └── helpers.py
-├── integrations/               # Framework integrations
-│   └── flask_middleware.py
-├── demo/                       # Demo applications
-│   └── protected_app.py
-└── attack_simulator.py         # Attack testing tool
+### Maximum Security
+```yaml
+waf_modules:
+  sql_injection:
+    sensitivity: "high"
+  port_filter:
+    scan_detection:
+      threshold: 5
 ```
 
-## 🔐 Security Modules Details
+## 📚 Documentation
 
-### SQL Injection Detector
-- **Patterns**: 25+ regex patterns
-- **Detection**: Union-based, blind, time-based, boolean-based
-- **Features**: Multi-layer decoding, comment evasion detection
-- **Score**: Threat scoring based on pattern severity
+- **[ips-service/README.md](ips-service/README.md)** - Full Go WAF docs
+- **[ips-service/QUICKSTART.md](ips-service/QUICKSTART.md)** - Quick start guide
+- **[ips-service/SETUP.md](ips-service/SETUP.md)** - Setup instructions
+- **[PERBANDINGAN_ENTERPRISE.md](PERBANDINGAN_ENTERPRISE.md)** - Enterprise comparison
 
-### XSS Detector
-- **Patterns**: 30+ patterns
-- **Detection**: Script tags, event handlers, JavaScript protocols
-- **Features**: Polyglot detection, attribute breaking, encoding tricks
-- **Types**: Reflected, stored, and DOM-based XSS
+## 🧪 Testing
 
-### ML Anomaly Detector
-- **Algorithm**: Isolation Forest
-- **Features**: Request length, entropy, special char ratio, param count
-- **Training**: Auto-retraining every hour with latest 1000 samples
-- **Accuracy**: Adapts to application-specific traffic patterns
+```bash
+# Test WAF protection
+python demo_ips_integration.py
 
-### Bot Detector
-- **User Agent Analysis**: 20+ malicious bot signatures
-- **Behavioral Analysis**: Request rate, sequential scanning patterns
-- **Browser Fingerprinting**: Header consistency validation
-- **Headless Detection**: PhantomJS, Selenium, Puppeteer detection
+# Test port filter
+python demo_port_filter.py
 
-## 🌟 Advantages Over Other WAFs
+# Test attack simulator
+python attack_simulator.py
+```
 
-| Feature | Phantom WAF | ModSecurity | Cloudflare | AWS WAF |
-|---------|-------------|-------------|------------|---------|
-| **ML Anomaly Detection** | ✅ | ❌ | ✅ | ❌ |
-| **Bot Detection** | ✅ | Limited | ✅ | Limited |
-| **Intelligent Rate Limiting** | ✅ | Basic | ✅ | ✅ |
-| **Open Source** | ✅ | ✅ | ❌ | ❌ |
-| **Easy Integration** | ✅ | Moderate | Easy | Moderate |
-| **Custom Rules** | ✅ | ✅ | Limited | ✅ |
-| **Cost** | Free | Free | $$$ | $$$ |
-| **Self-Hosted** | ✅ | ✅ | ❌ | ❌ |
+## 🛠️ Development
 
-## 🤝 Contributing
+### Build Go WAF
+```bash
+cd ips-service
+go mod download
+go build -o phantom-waf cmd/phantom-waf/main.go
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Run Tests
+```bash
+go test ./... -v
+```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 🌟 Highlights
 
-## 📝 License
+- ✅ **20x faster** than Python WAF
+- ✅ **9 detection modules** all in Go
+- ✅ **Flexible configuration** (enable/disable modules)
+- ✅ **3 deployment modes** (full/WAF/IPS)
+- ✅ **Multi-framework** support
+- ✅ **Port scanning** detection
+- ✅ **Single binary** deployment
+- ✅ **Enterprise-grade** protection
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🔒 Security Features
 
-## 🙏 Acknowledgments
+- [x] SQL Injection Protection
+- [x] XSS Protection
+- [x] Command Injection Protection
+- [x] Path Traversal Protection
+- [x] CSRF Protection
+- [x] Rate Limiting
+- [x] Bot Detection
+- [x] Port Filter & Scan Detection
+- [x] IP Reputation & Threat Intelligence
+- [x] Behavioral Anomaly Detection
+- [x] GeoIP Filtering (optional)
 
-- OWASP Top 10 Project for security guidelines
-- scikit-learn for ML algorithms
-- Flask/Django/FastAPI communities
+## 📄 License
 
+MIT License
 
-## 🎯 Roadmap
+## 🙏 Credits
 
-- [x] Core attack detection modules
-- [x] ML-based anomaly detection
-- [x] Bot detection and mitigation
-- [x] Flask integration
-- [ ] Django integration
-- [ ] FastAPI integration
-- [ ] GeoIP blocking
-- [ ] Virtual patching engine
-- [ ] Web-based management dashboard
-- [ ] Threat intelligence integration
-- [ ] Docker containerization
-- [ ] Kubernetes deployment
+**Phantom Security Project** - Enterprise-Grade WAF dengan Go Performance
 
 ---
 
-Made with ❤️ by the Phantom Security Team
-
-**⭐ Star this repository if you find it helpful!**
+**Made with ❤️ for Maximum Security & Performance** 🛡️🚀

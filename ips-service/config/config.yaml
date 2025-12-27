@@ -1,0 +1,219 @@
+# Phantom WAF Configuration
+# High-Performance Go WAF + IPS Service
+
+# Server Configuration
+server:
+  grpc_port: 50051
+  rest_port: 8080
+  host: "0.0.0.0"
+  enable_grpc: false      # Set true for gRPC
+  enable_rest: true       # REST API enabled
+
+# Deployment Mode (FLEXIBLE!)
+deployment:
+  mode: "full"            # full, waf-only, ips-only
+  concurrent_modules: true # Run modules in parallel for speed
+  early_termination: true  # Stop if critical threat detected
+
+# Redis Cache (Optional)
+redis:
+  enabled: true           # Set false to run without Redis
+  host: "localhost:6379"
+  password: ""
+  db: 0
+
+# Database (SQLite by default, can use PostgreSQL)
+database:
+  type: "sqlite"          # sqlite or postgres
+  sqlite_path: "data/phantom_waf.db"
+  # For PostgreSQL:
+  # type: "postgres"
+  # host: "localhost"
+  # port: 5432
+  # name: "phantom_waf"
+  # user: "waf_user"
+  # password: "secure_password"
+
+# WAF Modules (Enable/Disable individually)
+waf_modules:
+  sql_injection:
+    enabled: true
+    sensitivity: "medium"  # low, medium, high
+    threshold: 7           # Score threshold for blocking
+    
+  xss_protection:
+    enabled: true
+    sensitivity: "medium"
+    threshold: 7
+    check_headers: true
+    check_params: true
+    check_body: true
+    
+  command_injection:
+    enabled: true
+    sensitivity: "high"
+    threshold: 8
+    
+  path_traversal:
+    enabled: true
+    sensitivity: "high"
+    threshold: 8
+    max_depth: 3
+    
+  csrf_protection:
+    enabled: true
+    token_length: 32
+    token_ttl: 3600        # seconds
+    check_origin: true
+    check_referer: true
+    safe_methods: ["GET", "HEAD", "OPTIONS"]
+    
+  rate_limiting:
+    enabled: true
+    algorithm: "token_bucket"
+    global_limit: 1000
+    global_window: 60      # seconds
+    per_ip_limit: 100
+    per_ip_window: 60
+    # Per-route custom limits
+    per_route:
+      "/api/login":
+        requests: 5
+        window: 300        # 5 minutes
+      "/api/register":
+        requests: 3
+        window: 600        # 10 minutes
+      "/api/password/reset":
+        requests: 3
+        window: 900        # 15 minutes
+    
+  bot_detection:
+    enabled: true
+    block_malicious: true
+    challenge_suspicious: true
+    good_bots:              # Whitelisted bots
+      - "googlebot"
+      - "bingbot"
+      - "slackbot"
+      - "facebookexternalhit"
+  
+  port_filter:              # NEW! Port filtering & scan detection
+    enabled: true
+    allowed_ports:          # Whitelist mode (leave empty to allow all)
+      - 80                  # HTTP
+      - 443                 # HTTPS
+      - 8080                # Alt HTTP
+      - 8443                # Alt HTTPS
+    blocked_ports:          # Always block these ports
+      - 23                  # Telnet (insecure)
+      - 445                 # SMB (common attack vector)
+      - 3389                # RDP (should be VPN only)
+    suspicious_ports:       # Flag these as suspicious
+      - 22                  # SSH (monitor access)
+      - 3306                # MySQL direct
+      - 5432                # PostgreSQL direct
+      - 6379                # Redis direct
+      - 27017               # MongoDB direct
+    scan_detection:
+      enabled: true
+      threshold: 10         # Unique ports accessed to trigger alert
+      window: 60            # Time window in seconds
+
+# IPS/Threat Intelligence
+threat_intelligence:
+  enabled: true
+  update_interval: 3600   # seconds (1 hour)
+  feeds:
+    - name: "ipsum"
+      enabled: true
+      url: "https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt"
+      type: "text"
+    - name: "emerging_threats"
+      enabled: true
+      url: "https://rules.emergingthreats.net/blockrules/compromised-ips.txt"
+      type: "text"
+    - name: "tor_exit_nodes"
+      enabled: true
+      url: "https://check.torproject.org/exit-addresses"
+      type: "text"
+    - name: "abuseipdb"
+      enabled: false        # Requires API key
+      api_key: "${ABUSEIPDB_API_KEY}"
+      url: "https://api.abuseipdb.com/api/v2/blacklist"
+
+# IP Detection Settings
+ip_detection:
+  enabled: true
+  reputation_threshold: 70
+  auto_block_threshold: 90
+  anomaly_sensitivity: "medium"
+  behavioral_analysis: true
+
+# GeoIP (Optional - requires MaxMind database)
+geoip:
+  enabled: false
+  database_path: "data/GeoLite2-City.mmdb"
+  block_countries: []     # e.g., ["CN", "RU"]
+  allow_countries: []     # Leave empty to allow all
+  block_tor: true
+  block_vpn: false
+  block_proxy: false
+
+# Logging
+logging:
+  level: "info"           # debug, info, warn, error
+  format: "json"          # json, text
+  output: "stdout"        # stdout, file
+  file_path: "logs/phantom_waf.log"
+  log_attacks: true
+  log_blocked: true
+  log_allowed: false      # Set true for debugging
+
+# Performance Tuning
+performance:
+  worker_pool_size: 100
+  cache_enabled: true
+  cache_ttl: 300          # seconds
+  max_request_size: 10485760  # 10MB
+  timeout: 30             # seconds
+
+# IP Whitelist (Never blocked)
+whitelist:
+  - "127.0.0.1"
+  - "::1"
+  - "10.0.0.0/8"          # Private networks
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+  # Add your trusted IPs here
+
+# IP Blacklist (Always blocked)
+blacklist: []
+  # Add malicious IPs here
+  # - "1.2.3.4"
+
+# Response Customization
+responses:
+  block:
+    status_code: 403
+    message: "Request blocked by security policy"
+  challenge:
+    status_code: 429
+    message: "Too many requests, please try again later"
+  rate_limit:
+    status_code: 429
+    message: "Rate limit exceeded"
+
+# Monitoring & Alerts
+monitoring:
+  enabled: true
+  metrics_port: 9090
+  prometheus_enabled: false
+  alerts:
+    email:
+      enabled: false
+      smtp_server: ""
+      from: ""
+      to: []
+    webhook:
+      enabled: false
+      url: ""
